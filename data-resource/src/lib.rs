@@ -15,11 +15,17 @@ use data_error::Result;
 use serde::Serialize;
 use std::{fmt::Debug, hash::Hash, path::Path};
 
-#[cfg(feature = "hash_blake3")]
-pub mod blake3;
-
-#[cfg(feature = "hash_crc32")]
-pub mod crc32;
+cfg_if::cfg_if! {
+    if #[cfg(feature = "hash_crc32")] {
+        mod crc32;
+        pub use crc32::ResourceId;
+    } else if #[cfg(feature = "hash_blake3")] {
+        mod blake3;
+        pub use blake3::ResourceId;
+    } else {
+        compile_error!("At least one of the hash functions must be enabled");
+    }
+}
 
 /// This trait defines a generic type representing a resource identifier.
 ///
@@ -27,7 +33,7 @@ pub mod crc32;
 /// The hash value is used to uniquely identify the resource.
 ///
 /// Implementors of this trait must provide a way to compute the hash value from the resource's data.
-pub trait ResourceId: Debug
+pub trait ResourceIdTrait: Debug
 + Display //todo: I guess this chain of traits can be coded in a nicer way
 + FromStr
 + Clone

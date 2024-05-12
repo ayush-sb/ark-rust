@@ -12,7 +12,7 @@ use crc32fast::Hasher;
 /// Uses [`crc32fast`] crate to compute the hash value.
 pub type ResourceId = u32;
 
-impl crate::ResourceId for ResourceId {
+impl crate::ResourceIdTrait for ResourceId {
     fn from_path<P: AsRef<Path>>(file_path: P) -> Result<Self> {
         log::debug!("Computing CRC32 hash for file: {:?}", file_path.as_ref());
 
@@ -43,16 +43,17 @@ impl crate::ResourceId for ResourceId {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ResourceIdTrait;
 
     #[test]
     fn sanity_check() {
         let file_path = Path::new("../test-assets/lena.jpg");
-        let id = crate::ResourceId::from_path(file_path)
+        let id = ResourceId::from_path(file_path)
             .expect("Failed to compute resource identifier");
         assert_eq!(id, 875183434);
 
         let raw_bytes = fs::read(file_path).expect("Failed to read file");
-        let id = crate::ResourceId::from_bytes(&raw_bytes)
+        let id = ResourceId::from_bytes(&raw_bytes)
             .expect("Failed to compute resource identifier");
         assert_eq!(id, 875183434);
     }

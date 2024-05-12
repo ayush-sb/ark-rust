@@ -1,20 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use data_resource::ResourceId;
+use data_resource::{ResourceId, ResourceIdTrait};
 use rand::prelude::*;
 use std::path::Path;
-
-#[cfg(feature = "hash_blake3")]
-use data_resource::blake3::ResourceId as Hash;
-#[cfg(not(feature = "hash_blake3"))]
-use data_resource::crc32::ResourceId as Hash;
-//todo: we have a problem with imports when we define more than 2 hash functions
-// https://users.rust-lang.org/t/conditional-module-import/82233
-//
-// somehow this causes a compilation problem because of clashing name `Hash`:
-// #[cfg(feature = "hash_blake3")]
-// use data_resource::blake3::ResourceId as Hash;
-// #[cfg(feature = "hash_crc32")]
-// use data_resource::crc32::ResourceId as Hash;
 
 // Add files to benchmark here
 const FILE_PATHS: [&str; 2] =
