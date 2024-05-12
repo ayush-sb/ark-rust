@@ -25,11 +25,11 @@ pub async fn watch_index<P: AsRef<Path>>(root_path: P) -> Result<()> {
     watcher.watch(root_path.as_ref(), RecursiveMode::Recursive)?;
     info!("Started watcher with config: \n\t{:?}", config);
 
+    let ark_folder = root_path.join(ARK_FOLDER);
     while let Some(res) = rx.next().await {
         match res {
             Ok(event) => {
                 // If the event is a change in .ark folder, ignore it
-                let ark_folder = root_path.join(ARK_FOLDER);
                 if event
                     .paths
                     .iter()
@@ -47,7 +47,7 @@ pub async fn watch_index<P: AsRef<Path>>(root_path: P) -> Result<()> {
         }
     }
 
-    Ok(())
+    unreachable!("Watcher stream ended unexpectedly");
 }
 
 fn async_watcher(
