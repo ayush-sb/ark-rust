@@ -21,8 +21,8 @@ pub struct FileStorage<K, V> {
 
 impl<K, V> FileStorage<K, V>
 where
-    K: Ord + Clone + serde::Serialize + serde::de::DeserializeOwned,
-    V: Clone + serde::Serialize + serde::de::DeserializeOwned,
+    K: Ord + serde::Serialize + serde::de::DeserializeOwned,
+    V: serde::Serialize + serde::de::DeserializeOwned,
 {
     /// Create a new file storage with a diagnostic label and file path
     pub fn new(label: String, path: &Path) -> Self {
@@ -75,8 +75,8 @@ where
 
 impl<K, V> BaseStorage<K, V> for FileStorage<K, V>
 where
-    K: Ord + Clone + serde::Serialize + serde::de::DeserializeOwned,
-    V: Clone + serde::Serialize + serde::de::DeserializeOwned,
+    K: Ord + serde::Serialize + serde::de::DeserializeOwned,
+    V: serde::Serialize + serde::de::DeserializeOwned,
 {
     fn set(&mut self, id: K, value: V) {
         self.data.insert(id, value);
@@ -154,8 +154,7 @@ where
                 .as_bytes(),
         )?;
 
-        let value_map = self.data.clone();
-        let value_data = serde_json::to_string(&value_map)?;
+        let value_data = serde_json::to_string(&self.data)?;
         writer.write_all(value_data.as_bytes())?;
 
         let new_timestamp = fs::metadata(&self.path)?.modified()?;
@@ -167,7 +166,7 @@ where
         log::info!(
             "{} {} entries have been written",
             self.label,
-            value_map.len()
+            self.data.len()
         );
         Ok(())
     }
