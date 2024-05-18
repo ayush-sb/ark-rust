@@ -70,7 +70,7 @@ pub fn provide_root(root_dir: &Option<PathBuf>) -> Result<PathBuf, AppError> {
 }
 
 // Read-only structure
-pub fn provide_index(root_dir: &PathBuf) -> ResourceIndex {
+pub fn provide_index(root_dir: &PathBuf) -> ResourceIndex<ResourceId> {
     let rwlock =
         fs_index::provide_index(root_dir).expect("Failed to retrieve index");
     let index = &*rwlock.read().unwrap();

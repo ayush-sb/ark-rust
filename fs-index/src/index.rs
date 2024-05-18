@@ -6,41 +6,40 @@ use std::fs::{self, File, Metadata};
 use std::io::{BufRead, BufReader, Write};
 use std::ops::Add;
 use std::path::{Path, PathBuf};
-use std::str::FromStr;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use walkdir::{DirEntry, WalkDir};
 
 use log;
 
 use crate::{ArklibError, Result, ARK_FOLDER, INDEX_PATH};
-use data_resource::{ResourceId, ResourceIdTrait};
+use data_resource::ResourceIdTrait;
 
 #[derive(Eq, Ord, PartialEq, PartialOrd, Hash, Clone, Debug)]
-pub struct IndexEntry {
+pub struct IndexEntry<Id: ResourceIdTrait> {
     pub modified: SystemTime,
-    pub id: ResourceId,
+    pub id: Id,
 }
 
 #[derive(PartialEq, Clone, Debug)]
-pub struct ResourceIndex {
-    pub id2path: HashMap<ResourceId, CanonicalPathBuf>,
-    pub path2id: HashMap<CanonicalPathBuf, IndexEntry>,
+pub struct ResourceIndex<Id: ResourceIdTrait> {
+    pub id2path: HashMap<Id, CanonicalPathBuf>,
+    pub path2id: HashMap<CanonicalPathBuf, IndexEntry<Id>>,
 
-    pub collisions: HashMap<ResourceId, usize>,
+    pub collisions: HashMap<Id, usize>,
     root: PathBuf,
 }
 
 #[derive(PartialEq, Debug)]
-pub struct IndexUpdate {
-    pub deleted: HashSet<ResourceId>,
-    pub added: HashMap<CanonicalPathBuf, ResourceId>,
+pub struct IndexUpdate<Id: ResourceIdTrait> {
+    pub deleted: HashSet<Id>,
+    pub added: HashMap<CanonicalPathBuf, Id>,
 }
 
 pub const RESOURCE_UPDATED_THRESHOLD: Duration = Duration::from_millis(1);
 
 pub type Paths = HashSet<CanonicalPathBuf>;
 
-impl ResourceIndex {
+impl<Id: ResourceIdTrait> ResourceIndex<Id> {
     pub fn size(&self) -> usize {
         //the actual size is lower in presence of collisions
         self.path2id.len()
@@ -97,7 +96,7 @@ impl ResourceIndex {
 
             let id = {
                 let str = parts.next().ok_or(ArklibError::Parse)?;
-                ResourceId::from_str(str).map_err(|_| ArklibError::Parse)?
+                Id::from_str(str).map_err(|_| ArklibError::Parse)?
             };
 
             let path: String =
@@ -134,7 +133,7 @@ impl ResourceIndex {
 
         let mut file = File::create(index_path)?;
 
-        let mut path2id: Vec<(&CanonicalPathBuf, &IndexEntry)> =
+        let mut path2id: Vec<(&CanonicalPathBuf, &IndexEntry<Id>)> =
             self.path2id.iter().collect();
         path2id.sort_by_key(|(_, entry)| *entry);
 
@@ -200,7 +199,7 @@ impl ResourceIndex {
         }
     }
 
-    pub fn update_all(&mut self) -> Result<IndexUpdate> {
+    pub fn update_all(&mut self) -> Result<IndexUpdate<Id>> {
         log::debug!("Updating the index");
         log::trace!("[update] known paths: {:?}", self.path2id.keys());
 
@@ -284,7 +283,7 @@ impl ResourceIndex {
             })
             .collect();
 
-        let mut deleted: HashSet<ResourceId> = HashSet::new();
+        let mut deleted: HashSet<Id> = HashSet::new();
 
         // treating both deleted and updated paths as deletions
         prev_paths
@@ -312,7 +311,7 @@ impl ResourceIndex {
                 }
             });
 
-        let added: HashMap<CanonicalPathBuf, IndexEntry> =
+        let added: HashMap<CanonicalPathBuf, IndexEntry<Id>> =
             scan_entries(updated_paths)
                 .into_iter()
                 .chain({
@@ -336,7 +335,7 @@ impl ResourceIndex {
             self.insert_entry(path.clone(), entry.clone());
         }
 
-        let added: HashMap<CanonicalPathBuf, ResourceId> = added
+        let added: HashMap<CanonicalPathBuf, Id> = added
             .into_iter()
             .map(|(path, entry)| (path, entry.id))
             .collect();
@@ -347,7 +346,10 @@ impl ResourceIndex {
     // the caller must ensure that:
     // * the index is up-to-date except this single path
     // * the path hasn't been indexed before
-    pub fn index_new(&mut self, path: &dyn AsRef<Path>) -> Result<IndexUpdate> {
+    pub fn index_new(
+        &mut self,
+        path: &dyn AsRef<Path>,
+    ) -> Result<IndexUpdate<Id>> {
         log::debug!("Indexing a new path");
 
         if !path.as_ref().exists() {
@@ -372,14 +374,14 @@ impl ResourceIndex {
                     ));
                 }
                 Ok(new_entry) => {
-                    let id = new_entry.id;
+                    let id = new_entry.clone().id;
 
                     if let Some(nonempty) = self.collisions.get_mut(&id) {
                         *nonempty += 1;
                     }
 
                     let mut added = HashMap::new();
-                    added.insert(path_buf.clone(), id);
+                    added.insert(path_buf.clone(), id.clone());
 
                     self.id2path.insert(id, path_buf.clone());
                     self.path2id.insert(path_buf, new_entry);
@@ -401,8 +403,8 @@ impl ResourceIndex {
     pub fn update_one(
         &mut self,
         path: &dyn AsRef<Path>,
-        old_id: ResourceId,
-    ) -> Result<IndexUpdate> {
+        old_id: Id,
+    ) -> Result<IndexUpdate<Id>> {
         log::debug!("Updating a single entry in the index");
 
         if !path.as_ref().exists() {
@@ -463,7 +465,7 @@ impl ResourceIndex {
                         self.forget_path(path, old_id).map(|mut update| {
                             update
                                 .added
-                                .insert(path_buf.clone(), new_entry.id);
+                                .insert(path_buf.clone(), new_entry.clone().id);
                             self.insert_entry(path_buf, new_entry);
 
                             update
@@ -474,7 +476,7 @@ impl ResourceIndex {
         };
     }
 
-    pub fn forget_id(&mut self, old_id: ResourceId) -> Result<IndexUpdate> {
+    pub fn forget_id(&mut self, old_id: Id) -> Result<IndexUpdate<Id>> {
         let old_path = self
             .path2id
             .drain()
@@ -499,12 +501,12 @@ impl ResourceIndex {
         })
     }
 
-    fn insert_entry(&mut self, path: CanonicalPathBuf, entry: IndexEntry) {
+    fn insert_entry(&mut self, path: CanonicalPathBuf, entry: IndexEntry<Id>) {
         log::trace!("[add] {} by path {}", entry.id, path.display());
-        let id = entry.id;
+        let id = entry.clone().id;
 
         if let std::collections::hash_map::Entry::Vacant(e) =
-            self.id2path.entry(id)
+            self.id2path.entry(id.clone())
         {
             e.insert(path.clone());
         } else if let Some(nonempty) = self.collisions.get_mut(&id) {
@@ -519,8 +521,8 @@ impl ResourceIndex {
     fn forget_path(
         &mut self,
         path: &CanonicalPath,
-        old_id: ResourceId,
-    ) -> Result<IndexUpdate> {
+        old_id: Id,
+    ) -> Result<IndexUpdate<Id>> {
         self.path2id.remove(path);
 
         if let Some(collisions) = self.collisions.get_mut(&old_id) {
@@ -547,8 +549,9 @@ impl ResourceIndex {
                 });
 
             if let Some(collided_path) = maybe_collided_path {
-                let old_path =
-                    self.id2path.insert(old_id, collided_path.clone());
+                let old_path = self
+                    .id2path
+                    .insert(old_id.clone(), collided_path.clone());
 
                 debug_assert_eq!(
                     old_path.unwrap().as_canonical_path(),
@@ -561,7 +564,7 @@ impl ResourceIndex {
                 ));
             }
         } else {
-            self.id2path.remove(&old_id);
+            self.id2path.remove(&old_id.clone());
         }
 
         let mut deleted = HashSet::new();
@@ -612,7 +615,13 @@ fn discover_paths<P: AsRef<Path>>(
         .collect()
 }
 
-fn scan_entry(path: &CanonicalPath, metadata: Metadata) -> Result<IndexEntry> {
+fn scan_entry<Id>(
+    path: &CanonicalPath,
+    metadata: Metadata,
+) -> Result<IndexEntry<Id>>
+where
+    Id: ResourceIdTrait,
+{
     if metadata.is_dir() {
         return Err(ArklibError::Path("Path is expected to be a file".into()));
     }
@@ -625,15 +634,18 @@ fn scan_entry(path: &CanonicalPath, metadata: Metadata) -> Result<IndexEntry> {
         ))?;
     }
 
-    let id = ResourceId::from_path(path)?;
+    let id = Id::from_path(path)?;
     let modified = metadata.modified()?;
 
     Ok(IndexEntry { id, modified })
 }
 
-fn scan_entries(
+fn scan_entries<Id>(
     entries: HashMap<CanonicalPathBuf, DirEntry>,
-) -> HashMap<CanonicalPathBuf, IndexEntry> {
+) -> HashMap<CanonicalPathBuf, IndexEntry<Id>>
+where
+    Id: ResourceIdTrait,
+{
     entries
         .into_iter()
         .filter_map(|(path_buf, entry)| {
@@ -669,6 +681,7 @@ mod tests {
     use crate::index::{discover_paths, IndexEntry};
     use crate::ResourceIndex;
     use canonical_path::CanonicalPathBuf;
+    use data_resource::ResourceId;
     use fs_atomic_versions::initialize;
     use std::fs::File;
     #[cfg(target_os = "linux")]
@@ -741,7 +754,8 @@ mod tests {
         run_test_and_clean_up(|path| {
             create_file_at(path.clone(), Some(FILE_SIZE_1), None);
 
-            let actual = ResourceIndex::build(path.clone());
+            let actual: ResourceIndex<ResourceId> =
+                ResourceIndex::build(path.clone());
 
             assert_eq!(actual.root, path.clone());
             assert_eq!(actual.path2id.len(), 1);
@@ -758,7 +772,8 @@ mod tests {
             create_file_at(path.clone(), Some(FILE_SIZE_1), None);
             create_file_at(path.clone(), Some(FILE_SIZE_1), None);
 
-            let actual = ResourceIndex::build(path.clone());
+            let actual: ResourceIndex<ResourceId> =
+                ResourceIndex::build(path.clone());
 
             assert_eq!(actual.root, path.clone());
             assert_eq!(actual.path2id.len(), 2);
@@ -777,7 +792,8 @@ mod tests {
             create_file_at(path.clone(), Some(FILE_SIZE_1), Some(FILE_NAME_1));
             create_file_at(path.clone(), Some(FILE_SIZE_2), Some(FILE_NAME_2));
 
-            let mut actual = ResourceIndex::build(path.clone());
+            let mut actual: ResourceIndex<ResourceId> =
+                ResourceIndex::build(path.clone());
 
             assert_eq!(actual.collisions.len(), 0);
             assert_eq!(actual.size(), 2);
@@ -806,7 +822,8 @@ mod tests {
         run_test_and_clean_up(|path| {
             create_file_at(path.clone(), Some(FILE_SIZE_1), None);
 
-            let mut actual = ResourceIndex::build(path.clone());
+            let mut actual: ResourceIndex<ResourceId> =
+                ResourceIndex::build(path.clone());
 
             let (_, expected_path) =
                 create_file_at(path.clone(), Some(FILE_SIZE_2), None);
@@ -843,7 +860,8 @@ mod tests {
     fn index_new_should_index_new_file_successfully() {
         run_test_and_clean_up(|path| {
             create_file_at(path.clone(), Some(FILE_SIZE_1), None);
-            let mut index = ResourceIndex::build(path.clone());
+            let mut index: ResourceIndex<ResourceId> =
+                ResourceIndex::build(path.clone());
 
             let (_, new_path) =
                 create_file_at(path.clone(), Some(FILE_SIZE_2), None);
@@ -928,7 +946,8 @@ mod tests {
                 Some(FILE_NAME_2),
             );
 
-            let mut actual = ResourceIndex::build(path.clone());
+            let mut actual: ResourceIndex<ResourceId> =
+                ResourceIndex::build(path.clone());
 
             assert_eq!(actual.collisions.len(), 0);
             assert_eq!(actual.size(), 2);
@@ -987,7 +1006,8 @@ mod tests {
     fn should_not_index_empty_file() {
         run_test_and_clean_up(|path| {
             create_file_at(path.clone(), Some(0), None);
-            let actual = ResourceIndex::build(path.clone());
+            let actual: ResourceIndex<ResourceId> =
+                ResourceIndex::build(path.clone());
 
             assert_eq!(actual.root, path.clone());
             assert_eq!(actual.path2id.len(), 0);
@@ -1000,7 +1020,8 @@ mod tests {
     fn should_not_index_hidden_file() {
         run_test_and_clean_up(|path| {
             create_file_at(path.clone(), Some(FILE_SIZE_1), Some(".hidden"));
-            let actual = ResourceIndex::build(path.clone());
+            let actual: ResourceIndex<ResourceId> =
+                ResourceIndex::build(path.clone());
 
             assert_eq!(actual.root, path.clone());
             assert_eq!(actual.path2id.len(), 0);
@@ -1014,7 +1035,8 @@ mod tests {
         run_test_and_clean_up(|path| {
             create_dir_at(path.clone());
 
-            let actual = ResourceIndex::build(path.clone());
+            let actual: ResourceIndex<ResourceId> =
+                ResourceIndex::build(path.clone());
 
             assert_eq!(actual.root, path.clone());
             assert_eq!(actual.path2id.len(), 0);
@@ -1085,7 +1107,8 @@ mod tests {
         );
 
         let start_time = Instant::now();
-        let index = ResourceIndex::build(path.to_string());
+        let index: ResourceIndex<ResourceId> =
+            ResourceIndex::build(path.to_string());
         let elapsed_time = start_time.elapsed();
 
         println!("Number of paths: {}", index.id2path.len());

@@ -10,6 +10,7 @@ pub mod index;
 pub use fs_atomic_versions::atomic::{modify, modify_json, AtomicFile};
 pub use fs_storage::{ARK_FOLDER, INDEX_PATH};
 
+use data_resource::ResourceId;
 use index::ResourceIndex;
 
 use std::collections::HashMap;
@@ -18,7 +19,7 @@ use std::sync::{Arc, RwLock};
 
 use canonical_path::CanonicalPathBuf;
 
-pub type ResourceIndexLock = Arc<RwLock<ResourceIndex>>;
+pub type ResourceIndexLock = Arc<RwLock<ResourceIndex<ResourceId>>>;
 
 lazy_static! {
     pub static ref REGISTRAR: RwLock<HashMap<CanonicalPathBuf, ResourceIndexLock>> =
@@ -27,7 +28,7 @@ lazy_static! {
 
 pub fn provide_index<P: AsRef<Path>>(
     root_path: P,
-) -> Result<Arc<RwLock<ResourceIndex>>> {
+) -> Result<Arc<RwLock<ResourceIndex<ResourceId>>>> {
     let root_path = CanonicalPathBuf::canonicalize(root_path)?;
 
     {
