@@ -23,9 +23,7 @@ data-error = { path = "../data-error" }
 data-link = { path = "../data-link" }
 data-pdf = { path = "../data-pdf" }
 
-data-resource = { path = "../data-resource" }
-# For now, we are explicitly using the non-cryptographic CRC-32 hash
-# Later, we should pull the function from `fs-index` directly
+
 dev-hash = { path = "../dev-hash" }
 fs-atomic-versions = { path = "../fs-atomic-versions" }
 fs-metadata = { path = "../fs-metadata" }

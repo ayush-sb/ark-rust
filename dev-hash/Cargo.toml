@@ -29,7 +29,6 @@ hex = "0.4"
 # Benchmarks
 criterion = { version = "0.5", features = ["html_reports"] }
 rand = "0.8"
-anyhow = "1.0"
 
 [[bench]]
 name = "crc32"

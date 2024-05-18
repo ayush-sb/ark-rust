@@ -15,7 +15,6 @@ fs-atomic-versions = { path = "../fs-atomic-versions" }
 # For now, we are explicitly using the non-cryptographic CRC-32 hash
 # Later, we should pull the function from `fs-index` directly
 data-resource = { path = "../data-resource" }
-dev-hash = { path = "../dev-hash" }
 fs-storage = { path = "../fs-storage" }
 serde = { version = "1.0.138", features = ["derive"] }
 
@@ -23,3 +22,4 @@ serde = { version = "1.0.138", features = ["derive"] }
 log = { version = "0.4.17", features = ["release_max_level_off"] }
 tempdir = "0.3.7"
 serde_json = "1.0.82"
+dev-hash = { path = "../dev-hash" }
