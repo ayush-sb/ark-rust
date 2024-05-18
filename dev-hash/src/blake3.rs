@@ -16,7 +16,7 @@ use data_resource::ResourceIdTrait;
 ///
 /// Uses [`blake3`] crate to compute the hash value.
 #[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize)]
-pub struct ResourceId(String);
+pub struct ResourceId(pub String);
 
 impl FromStr for ResourceId {
     type Err = hex::FromHexError;

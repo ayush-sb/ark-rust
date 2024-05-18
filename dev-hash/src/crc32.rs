@@ -15,7 +15,7 @@ use data_resource::ResourceIdTrait;
 ///
 /// Uses [`crc32fast`] crate to compute the hash value.
 #[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize)]
-pub struct ResourceId(u32);
+pub struct ResourceId(pub u32);
 
 impl FromStr for ResourceId {
     type Err = std::num::ParseIntError;

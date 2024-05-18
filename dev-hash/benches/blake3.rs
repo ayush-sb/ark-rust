@@ -1,7 +1,9 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use data_resource::{ResourceId, ResourceIdTrait};
+use data_resource::ResourceIdTrait;
 use rand::prelude::*;
 use std::path::Path;
+
+use dev_hash::Blake3ResourceId as ResourceId;
 
 // Add files to benchmark here
 const FILE_PATHS: [&str; 2] =

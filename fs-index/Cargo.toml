@@ -15,7 +15,7 @@ fs-storage = { path = "../fs-storage" }
 
 # For now, we are explicitly using the non-cryptographic CRC-32 hash
 # The developer is responsible for specifying consistent hash function in other crates
-data-resource = { path = "../data-resource", features = ["hash_crc32"] }
+data-resource = { path = "../data-resource" }
 
 log = { version = "0.4.17", features = ["release_max_level_off"] }
 walkdir = "2.3.2"
