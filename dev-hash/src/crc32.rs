@@ -6,7 +6,7 @@ use std::{
 
 use core::{fmt::Display, str::FromStr};
 use crc32fast::Hasher;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use data_error::Result;
 use data_resource::ResourceIdTrait;
@@ -14,7 +14,9 @@ use data_resource::ResourceIdTrait;
 /// Represents a resource identifier using the CRC32 algorithm.
 ///
 /// Uses [`crc32fast`] crate to compute the hash value.
-#[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub struct ResourceId(pub u32);
 
 impl FromStr for ResourceId {

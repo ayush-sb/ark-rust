@@ -7,7 +7,7 @@ use std::{
 use blake3::Hasher;
 use core::{fmt::Display, str::FromStr};
 use hex::encode;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use data_error::Result;
 use data_resource::ResourceIdTrait;
@@ -15,7 +15,9 @@ use data_resource::ResourceIdTrait;
 /// Represents a resource identifier using the BLAKE3 algorithm.
 ///
 /// Uses [`blake3`] crate to compute the hash value.
-#[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub struct ResourceId(pub String);
 
 impl FromStr for ResourceId {

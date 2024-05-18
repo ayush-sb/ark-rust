@@ -3,6 +3,7 @@
 //! `data-resource` is a crate for managing resource identifiers.
 use core::{fmt::Display, str::FromStr};
 use data_error::Result;
+use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::{fmt::Debug, hash::Hash, path::Path};
 
@@ -23,6 +24,7 @@ pub trait ResourceIdTrait:
     + PartialOrd
     + Hash
     + Serialize
+    + DeserializeOwned
 {
     /// Computes the resource identifier from the given file path
     fn from_path<P: AsRef<Path>>(file_path: P) -> Result<Self>;
