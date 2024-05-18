@@ -32,6 +32,7 @@ rstest = '0.18.2'
 # benchmarking
 criterion = { version = "0.5", features = ["html_reports"] }
 rand = "0.8"
+dev-hash = { path = "../dev-hash" }
 
 [[bench]]
 name = "index_build_benchmark"

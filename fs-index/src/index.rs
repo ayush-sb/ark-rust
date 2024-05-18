@@ -681,6 +681,7 @@ mod tests {
     use crate::index::{discover_paths, IndexEntry};
     use crate::ResourceIndex;
     use canonical_path::CanonicalPathBuf;
+    use dev_hash::Crc32ResourceId as ResourceId;
     use fs_atomic_versions::initialize;
     use std::fs::File;
     #[cfg(target_os = "linux")]
