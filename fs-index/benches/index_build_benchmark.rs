@@ -1,7 +1,7 @@
 use criterion::{
     black_box, criterion_group, criterion_main, BenchmarkId, Criterion,
 };
-use data_resource::ResourceId;
+use dev_hash::Crc32ResourceId as ResourceId;
 use fs_index::index::ResourceIndex;
 
 const DIR_PATH: &str = "../test-assets/"; // Set the path to the directory containing the resources here

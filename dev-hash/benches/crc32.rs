@@ -22,7 +22,7 @@ fn generate_random_data(size: usize) -> Vec<u8> {
 /// - Measures the time taken to create a resource ID from file paths.
 /// - Measures the time taken to create a resource ID from random data.
 fn bench_resource_id_creation(c: &mut Criterion) {
-    let mut group = c.benchmark_group("resource_id_creation");
+    let mut group = c.benchmark_group("crc32_resource_id_creation");
     group.measurement_time(BENCHMARK_TIME_LIMIT);
 
     // Benchmarks for computing from file paths

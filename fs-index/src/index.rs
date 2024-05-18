@@ -11,8 +11,9 @@ use walkdir::{DirEntry, WalkDir};
 
 use log;
 
-use crate::{ArklibError, Result, ARK_FOLDER, INDEX_PATH};
+use data_error::{ArklibError, Result};
 use data_resource::ResourceIdTrait;
+use fs_storage::{ARK_FOLDER, INDEX_PATH};
 
 #[derive(Eq, Ord, PartialEq, PartialOrd, Hash, Clone, Debug)]
 pub struct IndexEntry<Id: ResourceIdTrait> {
@@ -700,8 +701,8 @@ mod tests {
     const FILE_NAME_2: &str = "test2.txt";
     const FILE_NAME_3: &str = "test3.txt";
 
-    const CRC32_1: u32 = 3817498742;
-    const CRC32_2: u32 = 1804055020;
+    const CRC32_1: ResourceId = ResourceId(3817498742);
+    const CRC32_2: ResourceId = ResourceId(1804055020);
 
     fn get_temp_dir() -> PathBuf {
         create_dir_at(std::env::temp_dir())
@@ -974,14 +975,14 @@ mod tests {
             let mut missing_path = path.clone();
             missing_path.push("missing/directory");
             let mut actual = ResourceIndex::build(path.clone());
-            let old_id = 2;
+            let old_id = ResourceId(2);
             let result = actual
-                .update_one(&missing_path, old_id)
+                .update_one(&missing_path, old_id.clone())
                 .map(|i| i.deleted.clone().take(&old_id))
                 .ok()
                 .flatten();
 
-            assert_eq!(result, Some(2));
+            assert_eq!(result, Some(ResourceId(2)));
         })
     }
 
@@ -991,14 +992,14 @@ mod tests {
             let mut missing_path = path.clone();
             missing_path.push("missing/directory");
             let mut actual = ResourceIndex::build(path.clone());
-            let old_id = 2;
+            let old_id = ResourceId(2);
             let result = actual
-                .update_one(&missing_path, old_id)
+                .update_one(&missing_path, old_id.clone())
                 .map(|i| i.deleted.clone().take(&old_id))
                 .ok()
                 .flatten();
 
-            assert_eq!(result, Some(2));
+            assert_eq!(result, Some(ResourceId(2)));
         })
     }
 
@@ -1058,20 +1059,20 @@ mod tests {
     #[test]
     fn index_entry_order() {
         let old1 = IndexEntry {
-            id: 2,
+            id: ResourceId(2),
             modified: SystemTime::UNIX_EPOCH,
         };
         let old2 = IndexEntry {
-            id: 1,
+            id: ResourceId(1),
             modified: SystemTime::UNIX_EPOCH,
         };
 
         let new1 = IndexEntry {
-            id: 1,
+            id: ResourceId(1),
             modified: SystemTime::now(),
         };
         let new2 = IndexEntry {
-            id: 2,
+            id: ResourceId(2),
             modified: SystemTime::now(),
         };
 

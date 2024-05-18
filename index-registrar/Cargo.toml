@@ -1,0 +1,25 @@
+[package]
+name = "index-registrar"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "index_registrar"
+crate-type = ["rlib"]
+bench = false
+
+[dependencies]
+fs-index = { path = "../fs-index" }
+fs-atomic-versions = { path = "../fs-atomic-versions" }
+fs-storage = { path = "../fs-storage" }
+data-error = { path = "../data-error" }
+data-resource = { path = "../data-resource" }
+dev-hash = { path = "../dev-hash" }
+
+log = { version = "0.4.17", features = ["release_max_level_off"] }
+walkdir = "2.3.2"
+anyhow = "1.0.58"
+lazy_static = "1.4.0"
+canonical-path = "2.0.2"
+pathdiff = "0.2.1"
+itertools = "0.10.5"

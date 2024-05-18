@@ -32,3 +32,4 @@ fs-metadata = { path = "../fs-metadata" }
 fs-properties = { path = "../fs-properties" }
 fs-index = { path = "../fs-index" }
 fs-storage = { path = "../fs-storage" }
+index-registrar = { path = "../index-registrar" }
