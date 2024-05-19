@@ -30,4 +30,5 @@ data-error = { path = "../data-error" }
 
 [dev-dependencies]
 tempdir = "0.3.7"
+# Depending on `dev-hash` for testing
 dev-hash = { path = "../dev-hash" }

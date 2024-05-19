@@ -26,6 +26,7 @@ data-resource = { path = "../data-resource" }
 uuid = { version = "1.6.1", features = ["v4"] }
 # benchmarking
 criterion = { version = "0.5", features = ["html_reports"] }
+# Depending on `dev-hash` for testing
 dev-hash = { path = "../dev-hash" }
 fs-atomic-versions = { path = "../fs-atomic-versions" }
 

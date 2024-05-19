@@ -18,4 +18,5 @@ fs-atomic-versions = { path = "../fs-atomic-versions" }
 fs-storage = { path = "../fs-storage" }
 
 data-error = { path = "../data-error" }
+# Depending on `dev-hash` to get `ResourceId` reference implementations
 dev-hash = { path = "../dev-hash" }
