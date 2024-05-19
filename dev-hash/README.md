@@ -8,3 +8,6 @@
 | ------------------ | --------------------------------------------------- |
 | `Blake3ResourceId` | Uses the Blake3 cryptographic hash function         |
 | `Crc32ResourceId`  | Uses the CRC32 fast non-cryptographic hash function |
+
+> [!NOTE]
+> The `ResourceId` type used in `index-registrar` must be the same as the one used in `ark-cli`.
