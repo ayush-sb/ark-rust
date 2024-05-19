@@ -20,6 +20,7 @@ use url::Url;
 pub struct Link<Id: ResourceIdTrait> {
     pub url: Url,
     pub prop: Properties,
+    // We need `_marker` to indicate that `Link` is generic over Id
     pub _marker: PhantomData<Id>,
 }
 
