@@ -19,15 +19,15 @@ chrono = "0.4.34"
 anyhow = "1.0.80"
 thiserror = "1.0.57"
 
-data-error = { path = "../data-error" }
-data-link = { path = "../data-link" }
-data-pdf = { path = "../data-pdf" }
 
-
-dev-hash = { path = "../dev-hash" }
+fs-index = { path = "../fs-index" }
+index-registrar = { path = "../index-registrar" }
 fs-atomic-versions = { path = "../fs-atomic-versions" }
 fs-metadata = { path = "../fs-metadata" }
 fs-properties = { path = "../fs-properties" }
-fs-index = { path = "../fs-index" }
 fs-storage = { path = "../fs-storage" }
-index-registrar = { path = "../index-registrar" }
+
+data-error = { path = "../data-error" }
+data-link = { path = "../data-link" }
+data-pdf = { path = "../data-pdf" }
+dev-hash = { path = "../dev-hash" }

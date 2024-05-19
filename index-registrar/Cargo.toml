@@ -9,12 +9,13 @@ crate-type = ["rlib"]
 bench = false
 
 [dependencies]
-fs-index = { path = "../fs-index" }
-fs-atomic-versions = { path = "../fs-atomic-versions" }
-fs-storage = { path = "../fs-storage" }
-data-error = { path = "../data-error" }
-dev-hash = { path = "../dev-hash" }
-
 log = { version = "0.4.17", features = ["release_max_level_off"] }
 lazy_static = "1.4.0"
 canonical-path = "2.0.2"
+
+fs-index = { path = "../fs-index" }
+fs-atomic-versions = { path = "../fs-atomic-versions" }
+fs-storage = { path = "../fs-storage" }
+
+data-error = { path = "../data-error" }
+dev-hash = { path = "../dev-hash" }
