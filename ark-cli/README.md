@@ -114,6 +114,3 @@ OPTIONS:
     -h, --help    Print help information
 
 ```
-
-> [!NOTE]
-> The `ResourceId` type used in `index-registrar` must be the same as the one used in `ark-cli`.
