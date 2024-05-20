@@ -3,9 +3,14 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::str::FromStr;
 
+use crate::index_registrar::provide_index;
 use data_pdf::{render_preview_page, PDFQuality};
+
+// This is where the `ResourceId` type is defined.
+// Change this to use another type for the resource id if needed.
+//
+// We define it globally here so that it can be easily changed.
 pub(crate) use dev_hash::Crc32ResourceId as ResourceId;
-pub(crate) use index_registrar::provide_index;
 
 use fs_atomic_versions::app_id;
 use fs_storage::ARK_FOLDER;
@@ -34,6 +39,7 @@ use util::{
 
 mod commands;
 mod error;
+mod index_registrar;
 mod models;
 mod util;
 

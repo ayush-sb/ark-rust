@@ -1,19 +1,14 @@
-#![deny(clippy::all)]
-#[macro_use]
-extern crate lazy_static;
+use lazy_static::lazy_static;
 extern crate canonical_path;
 
 use data_error::Result;
-
-pub use fs_atomic_versions::atomic::{modify, modify_json, AtomicFile};
-pub use fs_storage::{ARK_FOLDER, INDEX_PATH};
-
-use dev_hash::Crc32ResourceId as ResourceId;
 use fs_index::ResourceIndex;
 
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::{Arc, RwLock};
+
+use crate::ResourceId;
 
 use canonical_path::CanonicalPathBuf;
 
